@@ -93,8 +93,8 @@ impl PubRsaScheme {
 /// while d is the private.
 #[derive(Debug)]
 pub struct GenRsa {
-  scheme: PubRsaScheme,
-  d: BigInt,
+  pub scheme: PubRsaScheme,
+  pub d: BigInt,
 }
 
 /// Extended euclidean algorithm to
@@ -129,19 +129,20 @@ impl GenRsa {
   ///
   /// max:      maximum value for p, q, and e
   /// return:   RSA keypair struct
-  pub fn new(max: &BigInt) -> GenRsa {
+  pub fn new(max: u64) -> GenRsa {
 
     // Get two random prime numbers
     // less than the max value and
     // get the value of n and totient
     // of n.
-    let p = GenRsa::rand_prime(max);
+    let max = BigInt::from(max);
+    let p = GenRsa::rand_prime(&max);
     let q = loop { 
-      let temp = GenRsa::rand_prime(max); 
+      let temp = GenRsa::rand_prime(&max); 
       if temp != p { break temp }
     };
     let n = p.checked_mul(&q).unwrap();
-    let totn = (p - 1) * (q - 1);
+    let totn = (&p - 1) * (&q - 1);
 
     // e is a random number such that
     // 1 < e < totn, and it is coprime
@@ -221,12 +222,66 @@ impl GenRsa {
     true
   }
 
+  /// Determines if the provided RSA
+  /// scheme is valid by encrypting
+  /// and decrypting a random integer
+  /// value with the public and private
+  /// key and ensuring the result is
+  /// the same as the input.
+  ///
+  /// return:       true if RSA scheme is valid
   pub fn is_valid(&self) -> bool {
-    let a: BigInt = rand::thread_rng().gen_bigint_range(&BigInt::from(1), &BigInt::from(10000));
+    let a: BigInt = rand::thread_rng().gen_bigint_range(&BigInt::from(1), &self.scheme.n);
     let first_raise = a.modpow(&self.scheme.e, &self.scheme.n);
     cmp_bigint(&first_raise.modpow(&self.d, &self.scheme.n), &a) == 0
   }
 }
+
+#[cfg(test)]
+mod tests {
+
+  use super::*;
+
+  #[test]
+  fn prime_test() {
+    for _ in 0..100 {
+      let n = GenRsa::rand_prime(&BigInt::from(10000));
+      assert!(GenRsa::is_prime(&n));
+    }
+  }
+
+  #[test]
+  fn valid_rsa() {
+    let t = GenRsa::new(10000);
+    assert!(t.is_valid());
+  }
+
+  #[test]
+  fn break_rsa() {
+    let scheme = PubRsaScheme {
+      n: BigInt::from(527),
+      e: BigInt::from(97),
+    };
+    assert_eq!(scheme.break_scheme(), BigInt::from(193));
+  }
+
+  #[test]
+  fn break_random_rsa() {
+    let rscheme = GenRsa::new(10000);
+    assert!(rscheme.is_valid());
+    assert_eq!(rscheme.scheme.break_scheme(), rscheme.d);
+  }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

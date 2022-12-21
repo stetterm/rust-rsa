@@ -7,19 +7,14 @@ use num_bigint::BigInt;
 
 fn main() {
   //let args: Vec<String> = env::args().collect();
-  let t = GenRsa::new(&BigInt::from(1000));
-  dbg!(&t);
-  assert!(t.is_valid());
+  //let t = GenRsa::new(10000);
+  //dbg!(&t);
+  //assert!(t.is_valid());
+  
+  let t = PubRsaScheme {
+    n: BigInt::from(527),
+    e: BigInt::from(97),
+  };
+  assert_eq!(t.break_scheme(), BigInt::from(193));
 }
 
-#[cfg(test)]
-mod tests {
-  use crate::rsa::*;
-
-  #[test]
-  fn gen_pair() {
-    let t = GenRsa::new(500);
-    dbg!(&t);
-    assert!(t.is_valid());
-  }
-}
