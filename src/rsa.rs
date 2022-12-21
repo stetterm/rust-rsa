@@ -21,6 +21,16 @@ pub struct PubRsaScheme {
   pub e: BigInt,
 }
 
+/// Compares the two provided
+/// big integers. If a is less
+/// than b, -1 is returned. If
+/// a is greater than b, 1 is
+/// returned. Otherwise 0 is
+/// returned.
+///
+/// a:          first big integer
+/// b:          second big integer
+/// return:     comparison value
 fn cmp_bigint(a: &BigInt, b: &BigInt) -> i32 {
   let sub = a - b;
   let z = BigInt::from(0);
